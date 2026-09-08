@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>¿NO NOS CREES? — Archivo histórico</title>
+  <link rel="stylesheet" href="assets/fonts/fonts.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Marco negro a pantalla completa. Dentro, el "escenario" está maquetado
+       a una resolución fija (config.js) y se escala para encajar. -->
+  <div id="marco">
+    <div id="escenario">
+
+      <!-- Webcam: SOLO se usa para leer el QR. Nunca se muestra en pantalla
+           ni se guarda ninguna imagen. Se mantiene 1px/opacidad 0 para que
+           el navegador siga entregando fotogramas al lector de QR. -->
+      <video id="camara" playsinline muted autoplay></video>
+
+      <!-- ================= ESTADO 1 · ESPERA ================= -->
+      <section class="pantalla" id="p-espera">
+        <div class="fondo-archivo" aria-hidden="true"></div>
+
+        <div class="ficha">
+          <div class="ficha-perfor" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i>
+          </div>
+          <h1 class="ficha-titulo"></h1>
+          <div class="ficha-relleno" aria-hidden="true"></div>
+          <p class="ficha-instruccion">
+            <b class="ficha-bolita" aria-hidden="true"></b>
+            <span class="ficha-instruccion-txt"></span>
+          </p>
+          <p class="ficha-error" hidden></p>
+        </div>
+
+        <p id="aviso-camara" hidden></p>
+      </section>
+
+      <!-- ================= ESTADO 2 · EXPEDIENTE (vídeo) ================= -->
+      <section class="pantalla" id="p-expediente">
+        <video id="video-testimonio" playsinline></video>
+        <div class="barra-sup">
+          <span class="barra-marca"></span>
+          <span class="barra-nombre"></span>
+        </div>
+        <div class="banda-sub">
+          <p id="subtitulos"></p>
+        </div>
+      </section>
+
+      <!-- ================= ESTADO 3 · CITA ================= -->
+      <section class="pantalla" id="p-cita">
+        <span class="cita-marca"></span>
+        <blockquote id="cita-texto"></blockquote>
+      </section>
+
+      <!-- ================= ESTADO 4 · FINAL ================= -->
+      <section class="pantalla" id="p-final">
+        <h2 id="final-titulo"></h2>
+        <div class="final-qr">
+          <img id="final-qr-img" src="img/qr-final.png" alt="Código QR del archivo online">
+        </div>
+        <p id="final-texto"></p>
+      </section>
+
+      <!-- ================= Modo desarrollo (?dev=1) ================= -->
+      <div id="dev" hidden>
+        <span class="dev-tit">MODO PRUEBA</span>
+        <button type="button" data-exp="EXP-001">EXP-001</button>
+        <button type="button" data-exp="EXP-002">EXP-002</button>
+        <button type="button" data-exp="EXP-003">EXP-003</button>
+        <button type="button" data-accion="reiniciar">Reiniciar</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Lienzo oculto donde se vuelca cada fotograma de la webcam para leer el QR -->
+  <canvas id="lienzo-qr" hidden></canvas>
+
+  <script src="config.js"></script>
+  <script src="lib/jsQR.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

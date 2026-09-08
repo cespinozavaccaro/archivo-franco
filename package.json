@@ -1,0 +1,11 @@
+{
+  "name": "archivo-franco",
+  "version": "0.1.0",
+  "description": "Estación 2 \"¿NO NOS CREES?\" — consulta de archivo histórico por QR. Instalación \"50 años en libertad\".",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
