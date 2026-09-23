@@ -2,34 +2,34 @@
   {
     "id": "EXP-001",
     "nombre": "María Perez",
-    "año": "XXXX",
-    "fotografia": "img/expediente-001.jpg",
-    "video": "videos/expediente-001.mp4",
-    "subtitulos": "PLACEHOLDER — subtítulos del testimonio del expediente 001. Se sustituirán por la transcripción real del vídeo.",
-    "cita": "PLACEHOLDER — cita o titular que saquemos del vídeo del expediente 001.",
-    "descripcion": "PLACEHOLDER — descripción breve provisional del expediente 001.",
-    "testimonio": "PLACEHOLDER — texto breve del testimonio provisional del expediente 001."
+    "secuencia": [
+      { "tipo": "video", "src": "media/EXP-001/1.mp4" },
+      { "tipo": "imagen", "src": "media/EXP-001/2.png" },
+      { "tipo": "video", "src": "media/EXP-001/3.mp4" },
+      { "tipo": "imagen", "src": "media/EXP-001/4.png" },
+      { "tipo": "imagen", "src": "media/EXP-001/5.png" }
+    ]
   },
   {
     "id": "EXP-002",
     "nombre": "PERSONA 02",
-    "año": "XXXX",
-    "fotografia": "img/expediente-002.jpg",
-    "video": "videos/expediente-002.mp4",
-    "subtitulos": "PLACEHOLDER — subtítulos del testimonio del expediente 002. Se sustituirán por la transcripción real del vídeo.",
-    "cita": "PLACEHOLDER — cita o titular que saquemos del vídeo del expediente 002.",
-    "descripcion": "PLACEHOLDER — descripción breve provisional del expediente 002.",
-    "testimonio": "PLACEHOLDER — texto breve del testimonio provisional del expediente 002."
+    "secuencia": [
+      { "tipo": "video", "src": "media/EXP-002/1.mp4" },
+      { "tipo": "imagen", "src": "media/EXP-002/2.png" },
+      { "tipo": "video", "src": "media/EXP-002/3.mp4" },
+      { "tipo": "imagen", "src": "media/EXP-002/4.png" },
+      { "tipo": "imagen", "src": "media/EXP-002/5.png" }
+    ]
   },
   {
     "id": "EXP-003",
     "nombre": "PERSONA 03",
-    "año": "XXXX",
-    "fotografia": "img/expediente-003.jpg",
-    "video": "videos/expediente-003.mp4",
-    "subtitulos": "PLACEHOLDER — subtítulos del testimonio del expediente 003. Se sustituirán por la transcripción real del vídeo.",
-    "cita": "PLACEHOLDER — cita o titular que saquemos del vídeo del expediente 003.",
-    "descripcion": "PLACEHOLDER — descripción breve provisional del expediente 003.",
-    "testimonio": "PLACEHOLDER — texto breve del testimonio provisional del expediente 003."
+    "secuencia": [
+      { "tipo": "video", "src": "media/EXP-003/1.mp4" },
+      { "tipo": "imagen", "src": "media/EXP-003/2.png" },
+      { "tipo": "video", "src": "media/EXP-003/3.mp4" },
+      { "tipo": "imagen", "src": "media/EXP-003/4.png" },
+      { "tipo": "imagen", "src": "media/EXP-003/5.png" }
+    ]
   }
 ]

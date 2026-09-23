@@ -4,35 +4,41 @@ Consulta de un archivo histórico mediante códigos QR, dentro de la
 instalación *"50 años en libertad"*.
 
 El visitante acerca una pieza de archivo (con un QR en el reverso) a la
-webcam. El sistema lee el QR, identifica el expediente y muestra en la
-pantalla el testimonio de esa persona.
+webcam. El sistema lee el QR, identifica el expediente y reproduce en
+pantalla completa la secuencia de vídeos e imágenes de esa persona.
 
 > **Sistema independiente.** Corre en su propia Raspberry Pi 5 y no tiene
 > nada que ver con la estación 1 (*"Esto con Franco sí pasaba"* /
 > cuestionario). El código de la estación 1 vive en la carpeta hermana
-> `../experiencia_franco/` y no se toca.
+> `../experiencia_franco/` y no se toca desde aquí.
 
-> **Contenido de prueba.** Los 3 expedientes, las fotos, los vídeos y los
-> textos son **PLACEHOLDER**. Los contenidos históricos reales se
-> incorporarán después, sin tocar el código (ver *Cambiar contenido*).
+> **Contenido de prueba.** Los 3 expedientes son placeholder. Los
+> contenidos históricos reales se incorporan sin tocar el código (ver
+> *7. Cambiar contenido*).
+
+> **Vídeos no incluidos en este repo.** `public/media/EXP-00X/` guarda 2
+> vídeos + 3 imágenes por expediente; los vídeos pesan 39–99 MB cada uno
+> (~360 MB en total) y están excluidos de git (`.gitignore`) para no
+> acercarse al límite de 100 MB de GitHub ni hacer el repo pesado.
+> **Respáldalos aparte** (copia a un disco/USB externo) — si se pierden,
+> el código sigue funcionando pero no hay nada que reproducir.
 
 ---
 
 ## 1. Recorrido
 
 ```
-ESPERA ──(se lee un QR)──▶ EXPEDIENTE (vídeo) ──▶ CITA ──▶ FINAL ──▶ ESPERA
+ESPERA ──(se lee un QR)──▶ EXPEDIENTE (secuencia: vídeos + imágenes) ──▶ ESPERA
 ```
 
 | Estado | Qué se ve |
 |---|---|
-| **ESPERA** | Rejilla de retratos de archivo desenfocada + ficha amarilla: *"Esto con Franco sí pasaba."* e instrucción para acercar el QR. La webcam escanea en segundo plano. Si el QR no está en la base de datos: *"EXPEDIENTE NO IDENTIFICADO"*. |
-| **EXPEDIENTE** | Vídeo del testimonio a pantalla completa, barra amarilla superior (marca + nombre) y banda amarilla inferior con subtítulos. |
-| **CITA** | Pantalla amarilla con una cita entresacada del vídeo. |
-| **FINAL** | Pantalla negra: *"Detrás de cada expediente había una persona…"* + QR al archivo online. A los 30 s vuelve sola a ESPERA. |
+| **ESPERA** | Fondo (rejilla de retratos) en bucle lento y desenfocado, con la ficha amarilla en primer plano: *"Esto con Franco sí pasaba."* e instrucción para acercar el QR. La webcam escanea en segundo plano. Si el QR no está en la base de datos: *"EXPEDIENTE NO IDENTIFICADO"*. |
+| **EXPEDIENTE** | La `secuencia` del expediente (vídeos + imágenes) a pantalla completa, sin texto superpuesto, con una barra de progreso abajo del todo. Vídeos: duran lo suyo. Imágenes: `MS_IMAGEN` (10 s). |
 
-Tocar la pantalla adelanta desde CITA y FINAL. Desde EXPEDIENTE se pasa
-solo al terminar el vídeo (o con `MS_VIDEO_MAX` en `config.js`).
+La webcam **escanea sin parar**, también durante la reproducción: enseñar
+otro QR cambia de expediente al vuelo (el mismo QR que ya se está viendo
+se ignora). Al terminar la secuencia, vuelve sola a ESPERA.
 
 ---
 
@@ -40,24 +46,25 @@ solo al terminar el vídeo (o con `MS_VIDEO_MAX` en `config.js`).
 
 ```
 archivo-franco/
-├── server.js                 servidor local (Node, sin dependencias)
+├── server.js                  servidor local (Node, sin dependencias)
+├── kiosco.sh                  arranque a pantalla completa (autostart)
 ├── package.json
 ├── public/
-│   ├── index.html            las 4 pantallas
+│   ├── index.html             las 2 pantallas (ESPERA / EXPEDIENTE)
 │   ├── style.css
-│   ├── app.js                estados + webcam + lectura de QR
-│   ├── config.js             ← resolución, tiempos, textos, URL del archivo online
-│   ├── lib/jsQR.js           lector de QR (local, sin internet)
-│   ├── assets/fonts/         Playfair Display + Inter (local) + fonts.css
-│   ├── data/expedientes.json ← BASE DE DATOS de expedientes
-│   ├── img/
-│   │   ├── expediente-00X.jpg   foto de cada persona (placeholder)
-│   │   ├── qr-final.png         QR de la pantalla FINAL (generado)
-│   │   └── fondo/retrato-0X.jpg retratos del fondo de ESPERA (placeholder)
-│   └── videos/expediente-00X.mp4  testimonios (placeholder)
-└── qrs/
-    ├── generar-qr.py         genera los QR
-    └── expediente-00X.png    ← imprimir y pegar en el reverso de cada pieza
+│   ├── app.js                 estados + webcam + lectura de QR + secuencia
+│   ├── config.js               resolución, tiempos, textos
+│   ├── lib/jsQR.js            lector de QR (local, sin internet)
+│   ├── assets/fonts/          Playfair Display + Inter (local) + fonts.css
+│   ├── data/expedientes.json   BASE DE DATOS: id, nombre y secuencia
+│   ├── media/EXP-00X/         2 vídeos + 3 imágenes por expediente (no en git)
+│   └── img/                   fondo y ficha de ESPERA, retratos, favicon
+├── qrs/
+│   ├── generar-qr.py          genera los QR a partir de expedientes.json
+│   └── expediente-00X.png     imprimir y pegar en el reverso de cada pieza
+└── tools/
+    ├── indexar-media.py       reconstruye "secuencia" desde public/media/
+    └── generar-espera-placeholder.py
 ```
 
 ---
@@ -66,8 +73,8 @@ archivo-franco/
 
 - **Node.js** (v18 o superior). Comprobar: `node --version`.
   Si no está: `sudo apt update && sudo apt install -y nodejs`
-- **Python 3** con `qrcode` y `pillow` — solo para (re)generar los QR.
-  Comprobar: `python3 -c "import qrcode, PIL"`
+- **Python 3** con `qrcode` y `pillow` — solo para (re)generar los QR o el
+  fondo placeholder. Comprobar: `python3 -c "import qrcode, PIL"`
   Si falta: `sudo apt install -y python3-qrcode python3-pil`
 - **Webcam USB** conectada.
 - No hace falta internet.
@@ -83,28 +90,19 @@ npm start            # equivale a:  node server.js
 
 Abrir en el navegador de la Pi:
 
-- Instalación:            <http://localhost:3000/>
-- Modo de prueba:         <http://localhost:3000/?dev=1>
+- Instalación:      <http://localhost:3000/>
+- Modo de prueba (sin webcam): <http://localhost:3000/?dev=1>
+- Diagnóstico de cámara/QR:    <http://localhost:3000/?debug=1>
 
-### Pantalla de la instalación (kiosco)
+### Arranque automático (kiosco)
 
-Pantalla **vertical 1080×1920** (configurable en `config.js`). Chromium a
-pantalla completa, con permiso de cámara automático y autoplay con sonido:
+`kiosco.sh` arranca el servidor si hace falta y abre Chromium a pantalla
+completa (`--kiosk`) sobre `http://localhost:3000/`, con la webcam
+concedida sola y autoplay con sonido. Se lanza solo al iniciar sesión,
+desde `~/.config/autostart/experiencia-franco.desktop`.
 
-```bash
-chromium-browser --kiosk --app=http://localhost:3000/ \
-  --use-fake-ui-for-media-stream \
-  --autoplay-policy=no-user-gesture-required
-```
-
-- `--use-fake-ui-for-media-stream`: concede el permiso de la webcam sin
-  preguntar (sigue siendo la cámara real; solo evita el aviso, que en un
-  kiosco sin ratón nadie podría aceptar).
-- `--autoplay-policy=no-user-gesture-required`: deja que el vídeo del
-  testimonio suene sin que nadie toque la pantalla.
-
-El arranque automático (servicio `systemd` + Chromium al iniciar sesión)
-se añadirá en una fase posterior, igual que en la estación 1.
+Para salir de la experiencia: **Alt+F4** (cierra Chromium; el servidor
+sigue vivo). Para lanzarlo a mano: `./kiosco.sh`.
 
 ---
 
@@ -130,67 +128,50 @@ se añadirá en una fase posterior, igual que en la estación 1.
 Cada QR contiene **solo el identificador en texto plano** (`EXP-001`,
 `EXP-002`, `EXP-003`) — sin URLs.
 
-Regenerarlos (por ejemplo tras añadir un expediente o cambiar la URL del
-archivo online):
+Regenerarlos (por ejemplo tras añadir un expediente):
 
 ```bash
 python3 qrs/generar-qr.py
 ```
 
-Genera:
-
-- `qrs/expediente-00X.png` — para **imprimir y pegar** en el reverso de
-  cada pieza física.
-- `public/img/qr-final.png` — el QR de la pantalla FINAL, a partir de
-  `URL_ARCHIVO_ONLINE` en `config.js`.
+Genera `qrs/expediente-00X.png` — para **imprimir y pegar** en el
+reverso de cada pieza física.
 
 ---
 
 ## 7. Cambiar contenido (sin tocar el código)
 
-**Textos, tiempos, resolución, URL del archivo online:** `public/config.js`.
+**Textos, tiempos, resolución:** `public/config.js`.
 
-**Expedientes:** `public/data/expedientes.json`. Un objeto por persona:
+**Expedientes:** pon los archivos en `public/media/EXP-00X/`, con el
+nombre empezando por un número que marca el orden
+(`1_entrevista.mp4`, `2_foto.jpg`…) — 2 vídeos + 3 imágenes por
+expediente. Después ejecuta:
 
-```json
-{
-  "id": "EXP-001",
-  "nombre": "María Perez",
-  "año": "XXXX",
-  "fotografia": "img/expediente-001.jpg",
-  "video": "videos/expediente-001.mp4",
-  "subtitulos": "Transcripción del testimonio…",
-  "cita": "Frase entresacada del vídeo.",
-  "descripcion": "Descripción breve.",
-  "testimonio": "Texto breve del testimonio."
-}
+```bash
+python3 tools/indexar-media.py
 ```
 
-- Sustituir los `.mp4` en `public/videos/` y los `.jpg` en `public/img/`
-  manteniendo el nombre (o cambiar la ruta en el JSON).
-- Para un expediente nuevo: añadir su objeto al JSON, poner sus archivos
-  y ejecutar `python3 qrs/generar-qr.py`.
-- Campos usados hoy en pantalla: `nombre`, `video`, `subtitulos`, `cita`.
-  `año`, `fotografia`, `descripcion` y `testimonio` se guardan para cuando
-  se decida mostrarlos.
+que reconstruye `secuencia` en `public/data/expedientes.json` a partir
+de esos archivos. **El JSON no se edita a mano.**
 
-**Fondo de ESPERA y fotos:** reemplazar los `.jpg` de `public/img/fondo/`
-y `public/img/` (mismos nombres).
+Para un expediente nuevo: añade su `{id, nombre}` a `expedientes.json`,
+pon sus archivos en `public/media/<ID>/`, ejecuta `indexar-media.py` y
+`generar-qr.py`, e imprime el QR nuevo.
 
-**Tipografías:** el diseño usa Playfair Display (serif) e Inter (sans),
-incluidas en `public/assets/fonts/`. Si hay una tipografía definitiva,
-dejar el `.ttf`/`.woff2` en esa carpeta y ajustar `assets/fonts/fonts.css`
-y las variables `--serif` / `--sans` de `style.css`.
+**Fondo y ficha de ESPERA:** sustituir `public/img/espera-fondo.jpg` y
+`public/img/espera-primer-plano.png` (mismos nombres).
+
+**Tipografías:** Playfair Display (serif) e Inter (sans), incluidas en
+`public/assets/fonts/`. Si hay una tipografía definitiva, dejar el
+`.ttf`/`.woff2` ahí y ajustar `assets/fonts/fonts.css` y las variables
+`--serif` / `--sans` de `style.css`.
 
 ---
 
 ## 8. Pendiente / a confirmar
 
-- Diseños definitivos de ESPERA y del aviso *"EXPEDIENTE NO IDENTIFICADO"*
-  (ahora reconstruidos a partir de la descripción y del lenguaje visual).
-- URL real del archivo online (`URL_ARCHIVO_ONLINE`, ahora placeholder) y
-  confirmar el texto de la pantalla FINAL ("archivo de Memorial Oral",
-  "126 supervivientes").
-- Contenidos históricos reales (fotos, vídeos, testimonios, citas).
+- Contenidos históricos definitivos (los 3 expedientes actuales son de
+  prueba).
+- Diseño definitivo del aviso *"EXPEDIENTE NO IDENTIFICADO"*.
 - Tipografía definitiva si no es Playfair Display / Inter.
-- Arranque automático (`systemd` + kiosco).

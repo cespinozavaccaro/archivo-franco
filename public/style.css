@@ -46,8 +46,8 @@ html, body {
 }
 
 /* ---- Conmutación de pantallas ----------------------------------------
-   Se usa visibility/opacity (no display) para que reglas por #id como
-   "#p-final { display:flex }" no impidan ocultar la pantalla. */
+   Se usa visibility/opacity (no display) para que una regla por #id que
+   ponga display (p. ej. flex) no impida ocultar la pantalla. */
 .pantalla {
   position: absolute;
   inset: 0;
@@ -73,103 +73,105 @@ html, body {
   pointer-events: none;
 }
 
+/* ---- Panel de diagnóstico (?dev=1 / ?debug=1) ---------------------- */
+#cam-debug {
+  position: fixed;
+  left: 14px;
+  bottom: 44px;            /* deja ver la barra de progreso, que va abajo del todo */
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.82);
+  border: 1px solid #4a4a4a;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+#camara.cam-debug-visible {
+  position: static;
+  width: 260px;
+  height: auto;
+  opacity: 1;
+  border: 1px solid #666;
+}
+.cam-debug-txt {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: #e8e8e2;
+  white-space: pre;
+  max-width: 320px;
+}
+
 /* =========================================================================
    ESTADO 1 · ESPERA
    ========================================================================= */
-#p-espera { background: #2b2b28; }
+#p-espera { background: #16150f; }
 
-.fondo-archivo {
+/* ---- Fondo: "cuestionario fondo" en bucle, lento y desenfocado ---------
+   .espera-fondo-cinta contiene DOS copias de la imagen apiladas. La
+   animación la desplaza hacia arriba hasta -50% de su altura (= una imagen
+   completa); en ese punto la 2ª copia ocupa el sitio exacto de la 1ª, así
+   que el salto al reiniciar el bucle es invisible.
+   El desenfoque ("al 30%") y la duración se ajustan en estas variables. */
+.espera-fondo {
   position: absolute;
-  inset: -6%;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-auto-rows: 18%;
-  gap: 10px;
-  filter: blur(15px) brightness(0.68) grayscale(0.35);
-  transform: scale(1.06);
+  inset: 0;
+  overflow: hidden;
+  --espera-blur: 9px;          /* intensidad del desenfoque del fondo (~"al 30%") */
+  --espera-duracion: 48s;      /* más alto = movimiento más lento */
+  --espera-zoom: 1.2;          /* ampliación del fondo (1 = tamaño base, 1.2 = +20%) */
 }
-.fondo-archivo img {
+.espera-fondo-cinta {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  /* 118% base (algo más ancho para que el blur no despegue los bordes) x zoom */
+  width: calc(118% * var(--espera-zoom));
+  transform: translateX(-50%);
+  will-change: transform;
+  animation: espera-desplazar var(--espera-duracion) linear infinite;
+  filter: blur(var(--espera-blur)) brightness(0.74);
+}
+.espera-fondo-cinta img {
+  display: block;
+  width: 100%;
+}
+@keyframes espera-desplazar {
+  from { transform: translateX(-50%) translateY(0); }
+  to   { transform: translateX(-50%) translateY(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .espera-fondo-cinta { animation: none; }
+}
+
+/* ---- Primer plano: "cuestionario en primer plano" (ficha amarilla) ----
+   El PNG ya viene a lienzo completo (1080x1920) con el resto transparente,
+   así que basta con encajarlo sobre la pantalla. */
+.espera-primer-plano {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  display: block;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
 }
 
-/* La "ficha" amarilla tipo hoja de archivo pautada */
-.ficha {
-  --renglon: 150px;            /* ritmo de la pauta = interlínea del título */
+/* Aviso "EXPEDIENTE NO IDENTIFICADO" sobre la ficha */
+.espera-error {
   position: absolute;
-  left: 84px;
-  right: 84px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 78px 84px 70px 156px;
-  background-color: var(--amarillo);
-}
-
-/* Perforaciones de archivador, medio salidas por el borde izquierdo */
-.ficha-perfor {
-  position: absolute;
-  left: -18px;
-  top: 90px;
-  bottom: 110px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-.ficha-perfor i {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  background: var(--negro);
-}
-
-/* Título: una línea por renglón, cada una subrayada (pauta) */
-.ficha-titulo {
-  font-family: var(--serif);
-  font-weight: 700;
-  color: var(--negro);
-}
-.ficha-titulo .linea,
-.ficha-relleno .linea {
-  display: block;
-  font-size: 150px;
-  line-height: var(--renglon);
-  letter-spacing: -0.015em;
-  border-bottom: 3px solid var(--negro);
-  white-space: nowrap;
-}
-/* .ficha-relleno .linea: renglones vacíos, solo se ve su subrayado */
-
-.ficha-instruccion,
-.ficha-error {
-  position: relative;
-  margin-top: var(--renglon);
-  padding: 26px 0 4px 92px;
-  border-top: 3px solid var(--negro);
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: 33px;
-  line-height: 1.22;
-  color: var(--negro);
-  max-width: 640px;
-}
-.ficha-bolita {
-  position: absolute;
-  left: 0;
-  top: 24px;
-  width: 58px;
-  height: 58px;
-  border-radius: 50%;
-  background: var(--negro);
-}
-.ficha-error {
+  left: 12%;
+  right: 12%;
+  bottom: 20%;
   font-family: var(--serif);
   font-weight: 900;
-  font-size: 48px;
-  line-height: 1.1;
+  font-size: 52px;
+  line-height: 1.08;
   letter-spacing: 0.02em;
-  max-width: none;
+  text-align: center;
+  color: var(--negro);
+  background: var(--amarillo);
+  padding: 24px 20px;
 }
 
 #aviso-camara {
@@ -183,11 +185,11 @@ html, body {
 }
 
 /* =========================================================================
-   ESTADO 2 · EXPEDIENTE (vídeo del testimonio)
+   ESTADO 2 · EXPEDIENTE (secuencia de vídeos e imágenes)
    ========================================================================= */
 #p-expediente { background: var(--negro); }
 
-#video-testimonio {
+#video-secuencia {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -196,135 +198,33 @@ html, body {
   background: var(--negro);
 }
 
-.barra-sup {
+/* Imágenes de la secuencia: a pantalla completa, sin recorte, sobre negro */
+#img-secuencia {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding: 34px 56px 40px;
-  background: var(--amarillo);
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 40px;
-}
-.barra-marca {
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 52px;
-  line-height: 1.02;
-  color: var(--negro);
-  max-width: 60%;
-}
-.barra-nombre {
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 58px;
-  color: var(--negro);
-  text-align: right;
-  white-space: nowrap;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--negro);
 }
 
-.banda-sub {
+/* Barra de progreso del elemento en curso.
+   Abajo del todo, a todo el ancho. Pista blanca; se rellena en negro de
+   izquierda a derecha según avanza el tiempo (lo mueve app.js). */
+.barra-progreso {
+  --barra-progreso-alto: 24px;   /* grosor de la barra */
   position: absolute;
   left: 0;
   right: 0;
   bottom: 0;
-  min-height: 210px;
-  max-height: 42%;
-  padding: 40px 90px 54px;
-  background: var(--amarillo);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-#subtitulos {
-  font-family: var(--sans);
-  font-weight: 600;
-  font-size: 36px;
-  line-height: 1.26;
-  text-align: center;
-  color: var(--negro);
-}
-
-/* =========================================================================
-   ESTADO 3 · CITA
-   ========================================================================= */
-#p-cita { background: var(--amarillo); }
-
-.cita-marca {
-  position: absolute;
-  top: 70px;
-  left: 80px;
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 60px;
-  line-height: 1.05;
-  color: var(--negro);
-  white-space: pre-line;
-}
-
-#cita-texto {
-  position: absolute;
-  left: 80px;
-  right: 80px;
-  bottom: 140px;
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 118px;
-  line-height: 1.04;
-  letter-spacing: -0.01em;
-  color: var(--negro);
-  quotes: '“' '”';
-}
-#cita-texto::before { content: open-quote; }
-#cita-texto::after  { content: close-quote; }
-
-/* =========================================================================
-   ESTADO 4 · FINAL
-   ========================================================================= */
-#p-final {
-  background: var(--negro);
-  padding: 110px 80px 90px;
-  display: flex;
-  flex-direction: column;
-}
-
-#final-titulo {
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 104px;
-  line-height: 1.03;
-  letter-spacing: -0.01em;
-  color: var(--amarillo);
-}
-
-.final-qr {
-  margin: 120px 0 60px;
-  width: 380px;
-  height: 380px;
-  border: 5px solid var(--amarillo);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-}
-.final-qr img {
-  width: 300px;
-  height: 300px;
+  height: var(--barra-progreso-alto);
   background: var(--blanco);
-  padding: 14px;
+  z-index: 5;
 }
-
-#final-texto {
-  font-family: var(--sans);
-  font-weight: 700;
-  font-size: 32px;
-  line-height: 1.35;
-  color: var(--amarillo);
-  max-width: 900px;
-  margin-top: auto;
+.barra-progreso-relleno {
+  height: 100%;
+  width: 0;
+  background: var(--negro);
 }
 
 /* =========================================================================
@@ -333,7 +233,7 @@ html, body {
 #dev {
   position: absolute;
   right: 20px;
-  bottom: 20px;
+  bottom: 44px;            /* deja ver la barra de progreso, que va abajo del todo */
   z-index: 50;
   display: flex;
   flex-wrap: wrap;

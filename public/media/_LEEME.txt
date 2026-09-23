@@ -1,0 +1,25 @@
+CONTENIDO DE LOS EXPEDIENTES  —  estación 2 "¿NO NOS CREES?"
+
+Pon el contenido de cada QR en su carpeta:
+
+  public/media/EXP-001/   -> lo que muestra el QR "EXP-001"
+  public/media/EXP-002/   -> lo que muestra el QR "EXP-002"
+  public/media/EXP-003/   -> lo que muestra el QR "EXP-003"
+
+En cada carpeta van sus 2 vídeos y sus 3 imágenes (5 archivos).
+
+EL ORDEN DE REPRODUCCIÓN LO MARCA EL NOMBRE DEL ARCHIVO: empieza cada
+nombre por un número. Ejemplo:
+
+  1_entrevista.mp4
+  2_retrato.jpg
+  3_carta.png
+  4_testimonio.mp4
+  5_documento.jpg
+
+- Vídeos: .mp4 (recomendado H.264/AAC), .webm o .mov  -> duran lo que dure el vídeo
+- Imágenes: .jpg .jpeg .png .webp                     -> 10 segundos cada una
+
+Después de dejar los archivos, ejecuta:
+    python3 tools/indexar-media.py
+para actualizar data/expedientes.json con la secuencia de cada expediente.

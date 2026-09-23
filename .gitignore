@@ -1,3 +1,18 @@
-node_modules/
-*.log
 .DS_Store
+kiosco.log
+*.log
+node_modules/
+__pycache__/
+server.log
+
+# Vídeos de los expedientes (39-99 MB cada uno, ~360 MB en total): no
+# caben cómodamente en git. Se respaldan aparte (ver README, sección
+# "Vídeos no incluidos en este repo"). El código los lee igual desde
+# public/media/EXP-00X/ aunque no estén versionados.
+public/media/**/*.mp4
+public/media/**/*.webm
+public/media/**/*.mov
+
+# Arte original de diseño (pesado, p. ej. 41 MB). Las versiones
+# optimizadas que usa la app sí están versionadas en public/img/.
+disenos/
